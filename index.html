@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darling Roblox vs Real Trump - Eagle Edition</title>
+    <style>
+        body { margin: 0; background: #0b0914; color: #fff; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        h1 { margin: 5px 0; color: #d442f5; font-size: 24px; text-shadow: 0 0 12px #d442f5; font-weight: bold; }
+        #gameContainer { position: relative; border: 5px solid #d442f5; border-radius: 4px; overflow: hidden; background: #120e24; box-shadow: 0 0 35px rgba(212, 66, 245, 0.4); }
+        canvas { display: block; cursor: crosshair; }
+        #ui { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; text-shadow: 2px 2px 0px #000; pointer-events: none; z-index: 10; }
+        .stat-box { background: #000; padding: 6px 14px; border: 2px solid #443c6c; }
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 26px; font-weight: bold; text-align: center; display: none; text-shadow: 3px 3px 0px #000; background: rgba(0, 0, 0, 0.95); padding: 25px; border: 3px solid #fff; width: 85%; box-sizing: border-box; z-index: 20; letter-spacing: 1px; }
+        .btn-container { margin-top: 15px; display: flex; gap: 10px; }
+        button { padding: 12px 24px; font-size: 16px; font-weight: bold; border: 2px solid #fff; background: #e94560; color: white; cursor: pointer; box-shadow: 3px 3px 0px #000; }
+        button:hover { background: #ff6b81; transform: translate(-2px, -2px); box-shadow: 5px 5px 0px #000; }
+        button:active { transform: translate(0px, 0px); box-shadow: 3px 3px 0px #000; }
+        button.next-btn { background: #4caf50; }
+        button.next-btn:hover { background: #66bb6a; }
+    </style>
+</head>
+<body>
+
+    <h1>ROBLOX DARLING VS DONALD TRUMP</h1>
+    <div id="gameContainer">
+        <div id="ui">
+            <div class="stat-box">STAGE: <span id="levelText">1</span> / 369</div>
+            <div class="stat-box">AMMO: <span id="ammoText">10</span> 🦅</div>
+        </div>
+        <div id="msg"></div>
+        <canvas id="gameCanvas" width="500" height="650"></canvas>
+    </div>
+    <div class="btn-container">
+        <button onclick="resetLevel()">THỬ LẠI</button>
+        <button id="nextBtn" class="next-btn" onclick="nextLevel()" style="display:none;">TIẾP THEO</button>
+    </div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const levelText = document.getElementById("levelText");
+const ammoText = document.getElementById("ammoText");
+const msg = document.getElementById("msg");
+const nextBtn = document.getElementById("nextBtn");
+
+// Khởi tạo hệ thống âm thanh Web Audio API
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    try {
+        if (type === 'shoot') { 
+            // GIẢ LẬP TIẾNG HÚ (TIẾNG RÍT CHÓI TAI) CỦA CHIM ĐẠI BÀNG KHÔNG GIAN
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc1.connect(gainNode);
+            osc2.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc1.type = 'sawtooth';
+            // Tạo cao độ rít đặc trưng từ tần số thấp vọt thẳng lên tần số cực cao rồi hạ dần
+            osc1.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc1.frequency.linearRampToValueAtTime(1400, audioCtx.currentTime + 0.1);
+            osc1.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.4);
+            
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(820, audioCtx.currentTime);
+            osc2.frequency.linearRampToValueAtTime(1420, audioCtx.currentTime + 0.1);
+            osc2.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.4);
+            
+            gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.08);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+            
+            osc1.start(); osc2.start();
+            osc1.stop(audioCtx.currentTime + 0.4);
+            osc2.stop(audioCtx.currentTime + 0.4);
+            
+        } else if (type === 'bounce') { 
+            // Tiếng đập cánh/va chạm của đại bàng vào tường chắn
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(380, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+        } else if (type === 'win') { 
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(330, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(660, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.45);
+        } else if (type === 'lose') { 
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.45);
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.45);
+        }
+    } catch(e) {}
+}
+
+// Tải ảnh khuôn mặt thật của Donald Trump từ internet
+const trumpFace = new Image();
+trumpFace.crossOrigin = "anonymous";
+trumpFace.src = "https://wikimedia.org";
+
+let currentLevel = 1;
+let ammo = 10;
+let gameOver = false;
+let gameWon = false;
+let bullets = [];
+let mouseX = 250;
+let mouseY = 325;
+let wingAnimationTimer = 0; // Tạo hiệu ứng vỗ cánh cho đạn đại bàng
+
+const player = { x: 60, y: 490, width: 45, height: 80 };
+let enemy = { x: 400, y: 200, width: 45, height: 80, alive: true };
+let walls = [];
+
+canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+});
+
+canvas.addEventListener("mousedown", (e) => {
+    if (gameOver || gameWon || ammo <= 0) return;
+
+    // Họng súng lục của Darling
+    const gunX = player.x + player.width + 15;
+    const gunY = player.y + 25;
+    const angle = Math.atan2(mouseY - gunY, mouseX - gunX);
+    
+    // Tạo viên đạn mang thông số vector định hướng bay
+    bullets.push({
+        x: gunX,
+        y: gunY,
+        vx: Math.cos(angle) * 11,
+        vy: Math.sin(angle) * 11,
+        angle: angle,
+        width: 32,  // Kích thước chim đại bàng sải cánh
+        height: 24,
+        bounces: 0
+    });
+
+    playSound('shoot'); // Kích hoạt tiếng đại bàng hú rít khi bắn
+    ammo--;
+    ammoText.innerText = ammo;
+});
+
+function generateLevel(lvl) {
+    ammo = 10;
+    ammoText.innerText = ammo;
+    gameOver = false;
+    gameWon = false;
+    msg.style.display = "none";
+    nextBtn.style.display = "none";
+    bullets = [];
+    enemy.alive = true;
+    levelText.innerText = lvl;
+
+    walls = [{ x: 0, y: 570, width: 500, height: 80 }];
+
+    enemy.x = 330 + (Math.sin(lvl * 12) * 60);
+    enemy.y = 400 - ((lvl % 4) * 65);
+
+    if (lvl % 3 === 1) {
+        walls.push({ x: 230, y: 160, width: 45, height: 240 });
+    } else if (lvl % 3 === 2) {
+        walls.push({ x: 160, y: 310, width: 200, height: 40 });
+    } else {
+        walls.push({ x: 210, y: 100, width: 45, height: 200 });
+        walls.push({ x: 300, y: 360, width: 110, height: 40 });
+    }
+}
+
+function resetLevel() {
+    generateLevel(currentLevel);
+}
+
+function nextLevel() {
+    if (currentLevel < 369) {
+        currentLevel++;
+        generateLevel(currentLevel);
+    } else {
+        msg.innerHTML = "<span style='color: #ffeb3b;'>BẠN ĐÃ PHÁ ĐẢO TOÀN BỘ 369 MÀN!</span>";
+        msg.style.display = "block";
+    }
+}
+
+function checkCollision(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}
+
+function update() {
+    if (gameOver || gameWon) return;
+
+    wingAnimationTimer += 0.2; // Tốc độ đập cánh của đạn chim đại bàng
+
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        b.angle = Math.atan2(b.vy, b.vx); // Cập nhật góc quay của chim theo hướng bay mới
+
+        // Nảy biên dọc
+        if (b.x < 0 || b.x > canvas.width) {
+            b.vx *= -1; b.bounces++; playSound('bounce');
+        }
+        // Nảy trần nhà
+        if (b.y < 0) {
+            b.vy *= -1; b.bounces++; playSound('bounce');
+        }
+// Va chạm tường chướng ngại vật
+walls.forEach(w => {
+let bulletRect = { x: b.x - b.width/2, y: b.y - b.height/2, width: b.width, height: b.height };
+if (checkCollision(bulletRect, w)) {
+if (b.x < w.x || b.x > w.x + w.width) b.vx *= -1;
+else b.vy *= -1;
+b.bounces++;
+playSound('bounce');
+}
+});
+// Đạn đại bàng vồ trúng Donald Trump
+if (enemy.alive) {
+let bulletRect = { x: b.x - b.width/2, y: b.y - b.height/2, width: b.width, height: b.height };
+if (checkCollision(bulletRect, enemy)) {
+enemy.alive = false;
+bullets.splice(i, 1);
+}
+}
+// Hủy nếu bay ra ngoài hoặc quá số lần nảy nấp
+if (b.bounces > 7 || b.y > canvas.height) {
+bullets.splice(i, 1);
+}
+}
+if (!enemy.alive && !gameWon) {
+gameWon = true;
+playSound('win');
+msg.innerHTML = "chúc mừng thằng da đen trước màn hình";
+msg.style.display = "block";
+nextBtn.style.display = "inline-block";
+} else if (enemy.alive && ammo === 0 && bullets.length === 0 && !gameOver) {
+gameOver = true;
+playSound('lose');
+msg.innerHTML = "bắn như tật";
+msg.style.display = "block";
+}
+}
+function draw() {
+ctx.fillStyle = "#120e24";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Vẽ tường chắn hộp vuông Roblox
+walls.forEach(w => {
+ctx.fillStyle = "#2d264d";
+ctx.fillRect(w.x, w.y, w.width, w.height);
+ctx.strokeStyle = "#4b3f80";
+ctx.lineWidth = 3;
+ctx.strokeRect(w.x, w.y, w.width, w.height);
+});
+// Vẽ tia laser đỏ định hướng ngắm súng
+if (!gameOver && !gameWon && ammo > 0) {
+ctx.strokeStyle = "rgba(255, 0, 0, 0.9)";
+ctx.lineWidth = 2.5;
+ctx.beginPath();
+ctx.moveTo(player.x + player.width + 10, player.y + 25);
+ctx.lineTo(mouseX, mouseY);
+ctx.stroke();
+}
+// --- VẼ SÁT THỦ DARLING (KHỐI ROBLOX THE ROCK - DA TÍM) ---
+ctx.fillStyle = "#8a2be2";
+ctx.fillRect(player.x, player.y + 20, player.width, player.height - 20);
+ctx.fillStyle = "#a846ff";
+ctx.fillRect(player.x + 5, player.y - 15, player.width - 10, 35);
+ctx.fillStyle = "#000";
+ctx.fillRect(player.x + 18, player.y - 5, 25, 8);
+// KHẨU SÚNG LỤC BẠC TRÊN TAY
+const gunX = player.x + player.width;
+const gunY = player.y + 20;
+ctx.fillStyle = "#b0b0b0"; ctx.fillRect(gunX, gunY, 20, 10);
+ctx.fillStyle = "#707070"; ctx.fillRect(gunX + 2, gunY + 10, 6, 12);
+// --- VẼ MỤC TIÊU DONALD TRUMP (THÂN VEST XANH ROBLOX + MẶT THẬT) ---
+if (enemy.alive) {
+ctx.fillStyle = "#0a369d";
+ctx.fillRect(enemy.x, enemy.y + 20, enemy.width, enemy.height - 20);
+ctx.fillStyle = "#ff1744";
+ctx.fillRect(enemy.x + enemy.width/2 - 4, enemy.y + 20, 8, 22);
+const headX = enemy.x + 2;
+const headY = enemy.y - 18;
+const headW = enemy.width - 4;
+const headH = 38;
+try {
+ctx.drawImage(trumpFace, headX, headY, headW, headH);
+ctx.fillStyle = "#ffd54f";
+ctx.fillRect(headX - 2, headY - 5, headW + 4, 8);
+} catch(e) {
+ctx.fillStyle = "#ffb74d";
+ctx.fillRect(headX, headY, headW, headH);
+ctx.fillStyle = "#ffd54f";
+ctx.fillRect(headX - 2, headY - 6, headW + 4, 10);
+}
+}
+// --- VẼ VIÊN ĐẠN HÌNH CHIM ĐẠI BÀNG VECTOR CHUYỂN ĐỘNG ---
+bullets.forEach(b => {
+ctx.save();
+ctx.translate(b.x, b.y);
+ctx.rotate(b.angle); // Quay thân chim đại bàng theo đúng góc vector bay
+// Vẽ sải cánh đại bàng nhấp nhô đập cánh theo hoạt ảnh (Màu nâu cổ điển)
+ctx.fillStyle = "#5d4037";
+let wingY = Math.sin(wingAnimationTimer) * 12;
+ctx.beginPath();
+ctx.moveTo(-10, 0);
+ctx.lineTo(0, -wingY - 14); // Cánh trên
+ctx.lineTo(10, 0);
+ctx.lineTo(0, wingY + 14);  // Cánh dưới
+ctx.closePath();
+ctx.fill();
+// Vẽ thân chim và đuôi (Màu nâu đậm)
+ctx.fillStyle = "#3e2723";
+ctx.fillRect(-14, -6, 24, 12); // Mình chim
+ctx.fillStyle = "#fff";
+ctx.fillRect(-20, -4, 7, 8);   // Lông đuôi trắng
+// Vẽ đầu đại bàng trắng đặc trưng (Đầu hướng về phía trước theo trục bay)
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(8, -7, 10, 14);
+// Vẽ chiếc mỏ chim đại bàng màu vàng nhọn sắc bén
+ctx.fillStyle = "#ffd54f";
+ctx.beginPath();
+ctx.moveTo(18, -4);
+ctx.lineTo(25, 0);
+ctx.lineTo(18, 4);
+ctx.closePath();
+ctx.fill();
+ctx.restore();
+});
+}
+function gameLoop() {
+update();
+draw();
+requestAnimationFrame(gameLoop);
+}
+generateLevel(currentLevel);
+gameLoop();
